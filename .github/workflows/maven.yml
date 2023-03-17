@@ -65,5 +65,5 @@ jobs:
         SC_CONTROLLER_URL: ${{ secrets.SC_CONTROLLER_URL }}
         SSC_UPLOAD_TOKEN: ${{ secrets.SSC_UPLOAD_TOKEN }}
         APPLICATION: "simprabbitMQ"
-        VERSION: "10.0"
+        VERSION: "11.0"
         BUILD_OPTS: "-bt mvn"
