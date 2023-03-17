@@ -67,35 +67,35 @@ jobs:
         APPLICATION: "simprabbitMQ"
         VERSION: "11.0"
         BUILD_OPTS: "-bt mvn"
+        
+    - name: Generate Fortify Report
+      #uses: docker://fortifydocker/fortify-vulnerability-exporter:latest
+      #with:
+      #  export_config: /config/SSCToGitHub.yml
+      #  ssc_baseUrl: http://<Public_IP>:8180/ssc
+      #  ssc_authToken: 5700ab1e-0af3-46d0-8289-e539540c3439
+      #  ssc_version_name: simplisticrabbitmq:11.0
+      #  # Or use ssc_version_id: 1234
+      run: |
+          echo 'Setting domain IP'
+          sudo echo "3.74.103.58 ssc.uat.fortifyhosted.net" | sudo tee -a /etc/hosts
+          wget -nv https://github.com/fortify/FortifyVulnerabilityExporter/releases/download/v1.5.2/FortifyVulnerabilityExporter.zip
+          mkdir -p $HOME/Fortify
+          unzip FortifyVulnerabilityExporter.zip -d "$HOME/Fortify/"
+          echo $PATH
+          export PATH=$PATH:$HOME/Fortify/
+          echo $PATH
+          FORTIFY_BIN_JAR=$HOME/Fortify/FortifyVulnerabilityExporter.jar
+          java -jar $FORTIFY_BIN_JAR SSCToGitHub --ssc.baseUrl=https://ssc.uat.fortifyhosted.net/ --ssc.user=esteban.annaratone --ssc.password=Mfocus000 --ssc.version.name="simprabbitMQ":"11.0" --csv.fields.severity='$[vuln.severity]' --csv.fields.friority='$[vuln.friority]' --csv.output.header=true "--csv.filter.expressions=vuln.friority matches 'Critical|High|Medium|Low'"
 
-- name: Generate Fortify Report
-#uses: docker://fortifydocker/fortify-vulnerability-exporter:latest
-#with:
-# export_config: /config/SSCToGitHub.yml
-# ssc_baseUrl: http://<Public_IP>:8180/ssc
-# ssc_authToken: 5700ab1e-0af3-46d0-8289-e539540c3439
-# ssc_version_name: simplisticrabbitmq:11.0
-# # Or use ssc_version_id: 1234
-run: |
-echo 'Setting domain IP'
-sudo echo "3.74.103.58 ssc.uat.fortifyhosted.net" | sudo tee -a /etc/hosts
-wget -nv https://github.com/fortify/FortifyVulnerabilityExporter/releases/download/v1.5.2/FortifyVulnerabilityExporter.zip
-mkdir -p $HOME/Fortify
-unzip FortifyVulnerabilityExporter.zip -d "$HOME/Fortify/"
-echo $PATH
-export PATH=$PATH:$HOME/Fortify/
-echo $PATH
-FORTIFY_BIN_JAR=$HOME/Fortify/FortifyVulnerabilityExporter.jar
-java -jar $FORTIFY_BIN_JAR SSCToGitHub --ssc.baseUrl=https://ssc.uat.fortifyhosted.net/ --ssc.user=esteban.annaratone --ssc.password=Mfocus000 --ssc.version.name="simprabbitMQ":"11.0" --csv.fields.severity='$[vuln.severity]' --csv.fields.friority='$[vuln.friority]' --csv.output.header=true "--csv.filter.expressions=vuln.friority matches 'Critical|High|Medium|Low'"
+    # Uploaded the generated file containing Fortify vulnerabilities to GitHub.
+    - uses: github/codeql-action/upload-sarif@v1
+      with:
+        sarif_file: ./gh-fortify-sast.sarif
 
-# Uploaded the generated file containing Fortify vulnerabilities to GitHub.
-- uses: github/codeql-action/upload-sarif@v1
-with:
-sarif_file: ./gh-fortify-sast.sarif
-
-# Optionally store the generated file for troubleshooting purposes.
-- uses: actions/upload-artifact@v2
-if: always()
-with:
-name: sarif-files
-path: ./gh-fortify-sast.sarif
+    # Optionally store the generated file for troubleshooting purposes.
+    - uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: sarif-files
+        path: ./gh-fortify-sast.sarif 
