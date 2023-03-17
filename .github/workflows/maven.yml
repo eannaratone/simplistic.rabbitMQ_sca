@@ -68,4 +68,16 @@ jobs:
         VERSION: "11.0"
         BUILD_OPTS: "-bt mvn"
         
-    
+      # Pull SAST issues from Fortify on Demand and generate GitHub-optimized SARIF output
+      - name: Export Results
+        uses: fortify/gha-export-vulnerabilities@v1
+        with:
+          ssc_base_url: ${{ secrets.SSC_BASE_URL }}
+          ssc_auth_token: ${{ secrets.SSC_AUTHTOKEN_DECODED }}
+          ssc_version_id: ${{ secrets.SSC_VERSION_ID }}
+      
+      # Import Fortify SAST results to GitHub Security Code Scanning
+      - name: Import Results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: ./gh-fortify-sast.sarif    
