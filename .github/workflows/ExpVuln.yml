@@ -1,5 +1,6 @@
 name: Import SSC SAST Results
-on: [workflow dispatch]
+on: 
+      workflow_dispatch:
       
 jobs:                                                  
   Import-SSC-SAST:
